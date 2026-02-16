@@ -98,6 +98,10 @@ class Annonce(SQLModel, table=True):
     agence: Optional[str] = None
     telephone: Optional[str] = None
 
+    # Contact
+    contact_email: Optional[str] = None
+    contact_telephone: Optional[str] = None
+
     # Médias
     photos: Optional[list] = Field(default=None, sa_column=Column(JSON))
     nb_photos: Optional[int] = None
@@ -105,6 +109,7 @@ class Annonce(SQLModel, table=True):
     # Scoring & statut
     score: Optional[int] = None  # 0-100, auto-calculé
     statut: Statut = Statut.nouveau
+    commentaire: Optional[str] = None
     notes_perso: Optional[str] = None
     raison_ecarte: Optional[str] = None
 
@@ -146,8 +151,11 @@ class AnnonceCreate(SQLModel):
     adresse: Optional[str] = None
     agence: Optional[str] = None
     telephone: Optional[str] = None
+    contact_email: Optional[str] = None
+    contact_telephone: Optional[str] = None
     photos: Optional[list] = None
     nb_photos: Optional[int] = None
+    commentaire: Optional[str] = None
     notes_perso: Optional[str] = None
 
 
@@ -177,6 +185,9 @@ class AnnonceUpdate(SQLModel):
     quartier: Optional[str] = None
     arrondissement: Optional[str] = None
     statut: Optional[Statut] = None
+    contact_email: Optional[str] = None
+    contact_telephone: Optional[str] = None
+    commentaire: Optional[str] = None
     notes_perso: Optional[str] = None
     raison_ecarte: Optional[str] = None
     photos: Optional[list] = None

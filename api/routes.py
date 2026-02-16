@@ -176,6 +176,12 @@ def ecarter_annonce(
         raise HTTPException(404, "Annonce introuvable")
     annonce.statut = Statut.ecarte
     annonce.raison_ecarte = raison
+    # Append raison to commentaire for traceability
+    prefix = f"[Écarté] {raison}"
+    if annonce.commentaire:
+        annonce.commentaire = f"{annonce.commentaire}\n{prefix}"
+    else:
+        annonce.commentaire = prefix
     annonce.updated_at = datetime.utcnow()
     session.add(annonce)
     session.commit()

@@ -118,6 +118,22 @@
                             <span x-show="a.traversant">↔️ Traversant</span>
                         </div>
                         <p class="text-sm text-gray-500 mt-1 line-clamp-2" x-text="a.description"></p>
+                        <!-- Contact -->
+                        <div class="mt-2 flex gap-3 text-xs text-gray-500" x-show="a.contact_email || a.contact_telephone">
+                            <span x-show="a.contact_email">📧 <span x-text="a.contact_email"></span></span>
+                            <span x-show="a.contact_telephone">📞 <span x-text="a.contact_telephone"></span></span>
+                        </div>
+                        <!-- Commentaire -->
+                        <div class="mt-2" x-show="a.commentaire || a._editComment">
+                            <div class="text-xs bg-gray-50 border border-gray-200 rounded p-2 text-gray-700 whitespace-pre-line" x-show="a.commentaire && !a._editComment" x-text="a.commentaire"></div>
+                        </div>
+                        <div class="mt-1" x-show="a._editComment">
+                            <textarea class="w-full text-xs border rounded p-2" rows="2" x-model="a._commentDraft" placeholder="Ajouter un commentaire..."></textarea>
+                            <div class="flex gap-1 mt-1">
+                                <button @click="saveComment(a)" class="text-xs bg-blue-500 text-white px-2 py-0.5 rounded">💾</button>
+                                <button @click="a._editComment = false" class="text-xs bg-gray-200 px-2 py-0.5 rounded">✕</button>
+                            </div>
+                        </div>
                         <div class="mt-2 flex gap-2" x-show="a.notes_perso">
                             <span class="text-xs bg-yellow-50 text-yellow-700 px-2 py-0.5 rounded">📝 <span x-text="a.notes_perso"></span></span>
                         </div>
@@ -135,6 +151,8 @@
                     <a :href="a.url" target="_blank" class="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded hover:bg-blue-100">🔗 Voir l'annonce</a>
                     <button @click="updateStatut(a.id, 'interessant')" class="text-xs bg-green-50 text-green-700 px-3 py-1 rounded hover:bg-green-100">⭐ Intéressant</button>
                     <button @click="updateStatut(a.id, 'a_visiter')" class="text-xs bg-purple-50 text-purple-700 px-3 py-1 rounded hover:bg-purple-100">📍 À visiter</button>
+                    <button @click="a._editComment = true; a._commentDraft = a.commentaire || ''" class="text-xs bg-gray-50 text-gray-700 px-3 py-1 rounded hover:bg-gray-100">💬 Commenter</button>
+                    <button @click="editContactPrompt(a)" class="text-xs bg-gray-50 text-gray-700 px-3 py-1 rounded hover:bg-gray-100">📇 Contact</button>
                     <button @click="ecarterPrompt(a.id)" class="text-xs bg-red-50 text-red-700 px-3 py-1 rounded hover:bg-red-100">❌ Écarter</button>
                 </div>
             </div>
@@ -191,6 +209,30 @@ function app() {
             });
             await this.loadAnnonces();
             await this.loadStats();
+        },
+
+        async saveComment(a) {
+            await fetch(`/api/annonces/${a.id}`, {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ commentaire: a._commentDraft }),
+            });
+            a.commentaire = a._commentDraft;
+            a._editComment = false;
+        },
+
+        async editContactPrompt(a) {
+            const email = prompt('Email de contact :', a.contact_email || '');
+            if (email === null) return;
+            const tel = prompt('Téléphone de contact :', a.contact_telephone || '');
+            if (tel === null) return;
+            await fetch(`/api/annonces/${a.id}`, {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ contact_email: email || null, contact_telephone: tel || null }),
+            });
+            a.contact_email = email || null;
+            a.contact_telephone = tel || null;
         },
 
         async ecarterPrompt(id) {
