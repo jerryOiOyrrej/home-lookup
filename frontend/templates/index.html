@@ -39,7 +39,8 @@
         <div>
             <label class="block text-xs font-medium text-gray-600 mb-1">Statut</label>
             <select x-model="filters.statut" @change="loadAnnonces()" class="rounded border-gray-300 text-sm">
-                <option value="">Tous</option>
+                <option value="sans_ecarte">Tous (sauf écartés)</option>
+                <option value="">Tous (y compris écartés)</option>
                 <option value="nouveau">🆕 Nouveau</option>
                 <option value="interessant">⭐ Intéressant</option>
                 <option value="a_visiter">📍 À visiter</option>
@@ -170,7 +171,7 @@ function app() {
         annonces: [],
         stats: null,
         filters: {
-            statut: '',
+            statut: 'sans_ecarte',
             arrondissement: '',
             prix_max: '',
             score_min: '',
@@ -184,7 +185,8 @@ function app() {
 
         async loadAnnonces() {
             const params = new URLSearchParams();
-            if (this.filters.statut) params.set('statut', this.filters.statut);
+            if (this.filters.statut && this.filters.statut !== 'sans_ecarte') params.set('statut', this.filters.statut);
+            if (this.filters.statut === 'sans_ecarte') params.set('exclude_ecarte', 'true');
             if (this.filters.arrondissement) params.set('arrondissement', this.filters.arrondissement);
             if (this.filters.prix_max) params.set('prix_max', this.filters.prix_max);
             if (this.filters.score_min) params.set('score_min', this.filters.score_min);

@@ -32,6 +32,7 @@ def list_annonces(
     surface_min: Optional[float] = None,
     surface_max: Optional[float] = None,
     score_min: Optional[int] = None,
+    exclude_ecarte: bool = False,
     sort_by: str = Query(default="score", pattern="^(score|prix|surface_m2|prix_m2|first_seen_at)$"),
     sort_order: str = Query(default="desc", pattern="^(asc|desc)$"),
     limit: int = Query(default=50, le=200),
@@ -43,6 +44,8 @@ def list_annonces(
 
     if statut:
         query = query.where(Annonce.statut == statut)
+    if exclude_ecarte:
+        query = query.where(Annonce.statut != Statut.ecarte)
     if source:
         query = query.where(Annonce.source == source)
     if arrondissement:
