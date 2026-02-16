@@ -162,6 +162,7 @@ class AnnonceCreate(SQLModel):
 class AnnonceUpdate(SQLModel):
     """Schema pour mettre à jour une annonce."""
 
+    url: Optional[str] = None
     titre: Optional[str] = None
     description: Optional[str] = None
     prix: Optional[int] = None
