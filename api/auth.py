@@ -55,9 +55,12 @@ async def get_current_user(
         return {"sub": "api", "name": "JoC", "method": "api_key"}
 
     # 2. Session cookie (set after OIDC login)
-    session_user = request.session.get("user") if hasattr(request, "session") else None
-    if session_user:
-        return session_user
+    try:
+        session_user = request.session.get("user")
+        if session_user:
+            return session_user
+    except Exception:
+        pass
 
     # 3. Bearer token — validate with OIDC userinfo
     if credentials:

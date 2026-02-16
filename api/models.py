@@ -4,7 +4,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from sqlmodel import Field, SQLModel, JSON, Column
+from sqlalchemy import Column, JSON
+from sqlmodel import Field, SQLModel
 
 
 class Statut(str, Enum):
