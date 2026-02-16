@@ -28,12 +28,12 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Session middleware (must be added before AuthMiddleware)
+# Middleware order: add_middleware stacks in reverse, so AuthMiddleware
+# must be added FIRST (runs second), then SessionMiddleware (runs first)
+app.add_middleware(AuthMiddleware)
+
 SESSION_SECRET = os.getenv("SESSION_SECRET", "change-me-in-production-please")
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
-
-# Auth middleware — protects all routes
-app.add_middleware(AuthMiddleware)
 
 # Routes
 app.include_router(oidc_router)
