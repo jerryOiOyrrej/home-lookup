@@ -13,6 +13,7 @@ from api.models import (
 )
 from api.scoring import compute_score
 from api.auth import get_current_user
+from api.scraper import scrape_annonce
 
 router = APIRouter(prefix="/api")
 
@@ -119,6 +120,39 @@ def create_annonce(data: AnnonceCreate, session: Session = Depends(get_session),
     annonce = Annonce(**data.model_dump())
     annonce.prix_m2 = int(data.prix / data.surface_m2) if data.surface_m2 > 0 else None
     annonce.score = compute_score(annonce)
+    session.add(annonce)
+    session.commit()
+    session.refresh(annonce)
+    return {"status": "created", "annonce": annonce}
+
+
+@router.post("/annonces/from-url", status_code=201)
+async def create_annonce_from_url(
+    payload: dict,
+    session: Session = Depends(get_session),
+    user: dict = Depends(get_current_user),
+):
+    """Créer une annonce à partir d'une URL — scrape auto des infos."""
+    url = payload.get("url", "").strip()
+    if not url:
+        raise HTTPException(400, "URL requise")
+
+    # Check doublon
+    existing = session.exec(select(Annonce).where(Annonce.url == url)).first()
+    if existing:
+        raise HTTPException(409, f"Annonce déjà en base (id={existing.id})")
+
+    try:
+        data = await scrape_annonce(url)
+    except Exception as e:
+        raise HTTPException(422, f"Impossible de scraper l'URL: {e}")
+
+    # Validate minimums — allow 0 for missing fields
+    annonce = Annonce(**data)
+    if annonce.prix and annonce.surface_m2:
+        annonce.prix_m2 = int(annonce.prix / annonce.surface_m2)
+    annonce.score = compute_score(annonce)
+
     session.add(annonce)
     session.commit()
     session.refresh(annonce)

@@ -170,89 +170,17 @@
 
 <!-- Modal Ajouter par URL -->
 <div x-show="showAddModal" x-cloak class="fixed inset-0 bg-black/40 flex items-center justify-center z-50" @click.self="showAddModal = false">
-    <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6" @click.stop>
-        <h2 class="text-lg font-bold mb-4">➕ Ajouter une annonce</h2>
-        <div class="space-y-3">
-            <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">URL de l'annonce *</label>
-                <input type="url" x-model="addForm.url" @input="detectSource()" placeholder="https://..." class="w-full border rounded-lg px-3 py-2 text-sm">
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Source</label>
-                    <select x-model="addForm.source" class="w-full border rounded-lg px-3 py-2 text-sm">
-                        <option value="bienici">Bien'ici</option>
-                        <option value="seloger">SeLoger</option>
-                        <option value="leboncoin">LeBonCoin</option>
-                        <option value="pap">PAP</option>
-                        <option value="figaro">Figaro</option>
-                        <option value="barnes">Barnes</option>
-                        <option value="autre">Autre</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Type</label>
-                    <select x-model="addForm.type_bien" class="w-full border rounded-lg px-3 py-2 text-sm">
-                        <option value="appartement">Appartement</option>
-                        <option value="maison">Maison</option>
-                        <option value="duplex">Duplex</option>
-                        <option value="loft">Loft</option>
-                        <option value="autre">Autre</option>
-                    </select>
-                </div>
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">Titre *</label>
-                <input type="text" x-model="addForm.titre" placeholder="T4 120m² Vauban 6e" class="w-full border rounded-lg px-3 py-2 text-sm">
-            </div>
-            <div class="grid grid-cols-3 gap-3">
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Prix (€) *</label>
-                    <input type="number" x-model.number="addForm.prix" placeholder="950000" class="w-full border rounded-lg px-3 py-2 text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Surface (m²) *</label>
-                    <input type="number" x-model.number="addForm.surface_m2" placeholder="120" class="w-full border rounded-lg px-3 py-2 text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Pièces *</label>
-                    <input type="number" x-model.number="addForm.nb_pieces" placeholder="4" class="w-full border rounded-lg px-3 py-2 text-sm">
-                </div>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Chambres</label>
-                    <input type="number" x-model.number="addForm.nb_chambres" placeholder="3" class="w-full border rounded-lg px-3 py-2 text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Arrondissement</label>
-                    <select x-model="addForm.arrondissement" class="w-full border rounded-lg px-3 py-2 text-sm">
-                        <option value="">—</option>
-                        <option value="4e">4e</option>
-                        <option value="5e">5e</option>
-                        <option value="6e">6e</option>
-                        <option value="7e">7e</option>
-                        <option value="8e">8e</option>
-                    </select>
-                </div>
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">Description</label>
-                <textarea x-model="addForm.description" rows="2" placeholder="Optionnel..." class="w-full border rounded-lg px-3 py-2 text-sm"></textarea>
-            </div>
-            <div class="flex flex-wrap gap-4 text-sm">
-                <label class="flex items-center gap-1"><input type="checkbox" x-model="addForm.terrasse"> 🌿 Terrasse</label>
-                <label class="flex items-center gap-1"><input type="checkbox" x-model="addForm.cave"> 📦 Cave</label>
-                <label class="flex items-center gap-1"><input type="checkbox" x-model="addForm.parking"> 🅿️ Parking</label>
-                <label class="flex items-center gap-1"><input type="checkbox" x-model="addForm.ascenseur"> 🛗 Ascenseur</label>
-                <label class="flex items-center gap-1"><input type="checkbox" x-model="addForm.traversant"> ↔️ Traversant</label>
-            </div>
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-6" @click.stop>
+        <h2 class="text-lg font-bold mb-1">➕ Ajouter une annonce</h2>
+        <p class="text-sm text-gray-500 mb-4">Colle l'URL, je m'occupe du reste 🪞</p>
+        <div>
+            <input type="url" x-model="addForm.url" @keydown.enter="submitAdd()" placeholder="https://www.bienici.com/annonce/..." class="w-full border-2 border-gray-200 focus:border-blue-400 rounded-lg px-4 py-3 text-sm" autofocus>
         </div>
-        <div class="flex justify-end gap-2 mt-5">
+        <div class="flex justify-end gap-2 mt-4">
             <button @click="showAddModal = false" class="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Annuler</button>
             <button @click="submitAdd()" :disabled="addLoading" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
-                <span x-show="!addLoading">Ajouter</span>
-                <span x-show="addLoading">⏳ Ajout...</span>
+                <span x-show="!addLoading">🔍 Scraper & ajouter</span>
+                <span x-show="addLoading">⏳ Scraping...</span>
             </button>
         </div>
         <div x-show="addError" class="mt-3 text-sm text-red-600 bg-red-50 p-2 rounded" x-text="addError"></div>
@@ -269,12 +197,7 @@ function app() {
         addLoading: false,
         addError: '',
         addSuccess: '',
-        addForm: {
-            url: '', source: 'autre', type_bien: 'appartement', titre: '',
-            prix: null, surface_m2: null, nb_pieces: null, nb_chambres: null,
-            arrondissement: '', description: '',
-            terrasse: false, cave: false, parking: false, ascenseur: false, traversant: false,
-        },
+        addForm: { url: '' },
         filters: {
             statut: 'sans_ecarte',
             arrondissement: '',
@@ -351,64 +274,27 @@ function app() {
             }
         },
 
-        detectSource() {
-            const u = this.addForm.url.toLowerCase();
-            if (u.includes('bienici')) this.addForm.source = 'bienici';
-            else if (u.includes('seloger')) this.addForm.source = 'seloger';
-            else if (u.includes('leboncoin')) this.addForm.source = 'leboncoin';
-            else if (u.includes('pap.fr')) this.addForm.source = 'pap';
-            else if (u.includes('figaro') || u.includes('bellesdemeures')) this.addForm.source = 'figaro';
-            else if (u.includes('barnes')) this.addForm.source = 'barnes';
-            else this.addForm.source = 'autre';
-        },
-
         async submitAdd() {
             this.addError = '';
             this.addSuccess = '';
-            if (!this.addForm.url || !this.addForm.titre || !this.addForm.prix || !this.addForm.surface_m2 || !this.addForm.nb_pieces) {
-                this.addError = 'Remplis au moins : URL, titre, prix, surface et nb pièces.';
-                return;
-            }
+            const url = this.addForm.url.trim();
+            if (!url) { this.addError = 'Colle une URL !'; return; }
             this.addLoading = true;
             try {
-                const body = {
-                    url: this.addForm.url,
-                    source: this.addForm.source,
-                    type_bien: this.addForm.type_bien,
-                    titre: this.addForm.titre,
-                    prix: this.addForm.prix,
-                    surface_m2: this.addForm.surface_m2,
-                    nb_pieces: this.addForm.nb_pieces,
-                };
-                if (this.addForm.nb_chambres) body.nb_chambres = this.addForm.nb_chambres;
-                if (this.addForm.arrondissement) body.arrondissement = this.addForm.arrondissement;
-                if (this.addForm.description) body.description = this.addForm.description;
-                if (this.addForm.terrasse) body.terrasse = true;
-                if (this.addForm.cave) body.cave = true;
-                if (this.addForm.parking) body.parking = true;
-                if (this.addForm.ascenseur) body.ascenseur = true;
-                if (this.addForm.traversant) body.traversant = true;
-
-                const res = await fetch('/api/annonces', {
+                const res = await fetch('/api/annonces/from-url', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(body),
+                    body: JSON.stringify({ url }),
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.detail || 'Erreur serveur');
-                this.addSuccess = data.status === 'updated' ? '🔄 Annonce mise à jour !' : '✅ Annonce ajoutée !';
+                this.addSuccess = `✅ Ajoutée ! Score: ${data.annonce?.score ?? '?'}/100`;
                 await this.loadAnnonces();
                 await this.loadStats();
-                // Reset form after short delay
                 setTimeout(() => {
                     this.showAddModal = false;
                     this.addSuccess = '';
-                    this.addForm = {
-                        url: '', source: 'autre', type_bien: 'appartement', titre: '',
-                        prix: null, surface_m2: null, nb_pieces: null, nb_chambres: null,
-                        arrondissement: '', description: '',
-                        terrasse: false, cave: false, parking: false, ascenseur: false, traversant: false,
-                    };
+                    this.addForm = { url: '' };
                 }, 1500);
             } catch (e) {
                 this.addError = e.message;
