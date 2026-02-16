@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏠 Marseille Immo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen" x-data="app()" x-init="init()">
+
+<!-- Header -->
+<header class="bg-white shadow-sm border-b">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">🏠 Marseille Immo</h1>
+            <p class="text-sm text-gray-500">Jerry & JoC — Recherche d'appartement</p>
+        </div>
+        <div class="flex gap-4 text-sm" x-show="stats">
+            <div class="bg-blue-50 px-3 py-1 rounded-full">
+                <span class="font-semibold" x-text="stats?.total || 0"></span> annonces
+            </div>
+            <div class="bg-green-50 px-3 py-1 rounded-full">
+                Score moyen: <span class="font-semibold" x-text="stats?.score_moyen || '-'"></span>/100
+            </div>
+            <div class="bg-purple-50 px-3 py-1 rounded-full">
+                Prix moyen: <span class="font-semibold" x-text="formatPrix(stats?.prix_moyen)"></span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Filtres -->
+<div class="max-w-7xl mx-auto px-4 py-4">
+    <div class="bg-white rounded-lg shadow-sm p-4 flex flex-wrap gap-4 items-end">
+        <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Statut</label>
+            <select x-model="filters.statut" @change="loadAnnonces()" class="rounded border-gray-300 text-sm">
+                <option value="">Tous</option>
+                <option value="nouveau">🆕 Nouveau</option>
+                <option value="interessant">⭐ Intéressant</option>
+                <option value="a_visiter">📍 À visiter</option>
+                <option value="visite">✅ Visité</option>
+                <option value="offre">💰 Offre</option>
+                <option value="ecarte">❌ Écarté</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Arrondissement</label>
+            <select x-model="filters.arrondissement" @change="loadAnnonces()" class="rounded border-gray-300 text-sm">
+                <option value="">Tous</option>
+                <option value="4e">4e</option>
+                <option value="5e">5e</option>
+                <option value="6e">6e</option>
+                <option value="7e">7e</option>
+                <option value="8e">8e</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Prix max</label>
+            <select x-model="filters.prix_max" @change="loadAnnonces()" class="rounded border-gray-300 text-sm">
+                <option value="">Pas de limite</option>
+                <option value="900000">900 000 €</option>
+                <option value="1000000">1 000 000 €</option>
+                <option value="1200000">1 200 000 €</option>
+                <option value="1500000">1 500 000 €</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Score min</label>
+            <select x-model="filters.score_min" @change="loadAnnonces()" class="rounded border-gray-300 text-sm">
+                <option value="">Tous</option>
+                <option value="70">70+</option>
+                <option value="60">60+</option>
+                <option value="50">50+</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Trier par</label>
+            <select x-model="filters.sort_by" @change="loadAnnonces()" class="rounded border-gray-300 text-sm">
+                <option value="score">Score</option>
+                <option value="prix">Prix</option>
+                <option value="surface_m2">Surface</option>
+                <option value="prix_m2">Prix/m²</option>
+                <option value="first_seen_at">Date</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Liste des annonces -->
+<div class="max-w-7xl mx-auto px-4 pb-8">
+    <div class="grid gap-4">
+        <template x-for="a in annonces" :key="a.id">
+            <div class="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow border-l-4"
+                 :class="borderColor(a.score)">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-xs px-2 py-0.5 rounded-full font-medium"
+                                  :class="statutBadge(a.statut)" x-text="statutLabel(a.statut)"></span>
+                            <span class="text-xs text-gray-400" x-text="a.source"></span>
+                            <span class="text-xs text-gray-400" x-text="a.arrondissement"></span>
+                            <span class="text-xs text-gray-400" x-text="a.quartier"></span>
+                        </div>
+                        <h3 class="font-semibold text-gray-900" x-text="a.titre"></h3>
+                        <div class="flex gap-4 mt-2 text-sm text-gray-600">
+                            <span>📐 <span x-text="a.surface_m2"></span> m²</span>
+                            <span>🏠 <span x-text="a.nb_pieces"></span> pièces</span>
+                            <span x-show="a.nb_chambres">🛏 <span x-text="a.nb_chambres"></span> ch.</span>
+                            <span x-show="a.terrasse">🌿 Terrasse</span>
+                            <span x-show="a.cave">📦 Cave</span>
+                            <span x-show="a.parking">🅿️ Parking</span>
+                            <span x-show="a.ascenseur">🛗 Ascenseur</span>
+                            <span x-show="a.traversant">↔️ Traversant</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1 line-clamp-2" x-text="a.description"></p>
+                        <div class="mt-2 flex gap-2" x-show="a.notes_perso">
+                            <span class="text-xs bg-yellow-50 text-yellow-700 px-2 py-0.5 rounded">📝 <span x-text="a.notes_perso"></span></span>
+                        </div>
+                    </div>
+                    <div class="text-right ml-4 flex-shrink-0">
+                        <div class="text-xl font-bold text-gray-900" x-text="formatPrix(a.prix)"></div>
+                        <div class="text-sm text-gray-500" x-text="formatPrix(a.prix_m2) + '/m²'"></div>
+                        <div class="mt-2 text-2xl font-bold" :class="scoreColor(a.score)">
+                            <span x-text="a.score"></span><span class="text-sm">/100</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Actions -->
+                <div class="flex gap-2 mt-3 pt-3 border-t">
+                    <a :href="a.url" target="_blank" class="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded hover:bg-blue-100">🔗 Voir l'annonce</a>
+                    <button @click="updateStatut(a.id, 'interessant')" class="text-xs bg-green-50 text-green-700 px-3 py-1 rounded hover:bg-green-100">⭐ Intéressant</button>
+                    <button @click="updateStatut(a.id, 'a_visiter')" class="text-xs bg-purple-50 text-purple-700 px-3 py-1 rounded hover:bg-purple-100">📍 À visiter</button>
+                    <button @click="ecarterPrompt(a.id)" class="text-xs bg-red-50 text-red-700 px-3 py-1 rounded hover:bg-red-100">❌ Écarter</button>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <div x-show="annonces.length === 0" class="text-center py-12 text-gray-400">
+        Aucune annonce trouvée. Lance une recherche ! 🔍
+    </div>
+</div>
+
+<script>
+function app() {
+    return {
+        annonces: [],
+        stats: null,
+        filters: {
+            statut: '',
+            arrondissement: '',
+            prix_max: '',
+            score_min: '',
+            sort_by: 'score',
+        },
+
+        async init() {
+            await this.loadAnnonces();
+            await this.loadStats();
+        },
+
+        async loadAnnonces() {
+            const params = new URLSearchParams();
+            if (this.filters.statut) params.set('statut', this.filters.statut);
+            if (this.filters.arrondissement) params.set('arrondissement', this.filters.arrondissement);
+            if (this.filters.prix_max) params.set('prix_max', this.filters.prix_max);
+            if (this.filters.score_min) params.set('score_min', this.filters.score_min);
+            if (this.filters.sort_by) params.set('sort_by', this.filters.sort_by);
+            params.set('sort_order', 'desc');
+
+            const res = await fetch(`/api/annonces?${params}`);
+            const data = await res.json();
+            this.annonces = data.annonces;
+        },
+
+        async loadStats() {
+            const res = await fetch('/api/stats');
+            this.stats = await res.json();
+        },
+
+        async updateStatut(id, statut) {
+            await fetch(`/api/annonces/${id}`, {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ statut }),
+            });
+            await this.loadAnnonces();
+            await this.loadStats();
+        },
+
+        async ecarterPrompt(id) {
+            const raison = prompt('Raison ?');
+            if (raison) {
+                await fetch(`/api/annonces/${id}/ecarter?raison=${encodeURIComponent(raison)}`, { method: 'POST' });
+                await this.loadAnnonces();
+                await this.loadStats();
+            }
+        },
+
+        formatPrix(prix) {
+            if (!prix) return '-';
+            return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(prix);
+        },
+
+        scoreColor(score) {
+            if (score >= 70) return 'text-green-600';
+            if (score >= 50) return 'text-yellow-600';
+            return 'text-red-500';
+        },
+
+        borderColor(score) {
+            if (score >= 70) return 'border-green-400';
+            if (score >= 50) return 'border-yellow-400';
+            return 'border-red-300';
+        },
+
+        statutBadge(statut) {
+            const map = {
+                nouveau: 'bg-blue-100 text-blue-700',
+                interessant: 'bg-green-100 text-green-700',
+                a_visiter: 'bg-purple-100 text-purple-700',
+                visite: 'bg-teal-100 text-teal-700',
+                offre: 'bg-yellow-100 text-yellow-700',
+                ecarte: 'bg-red-100 text-red-700',
+            };
+            return map[statut] || 'bg-gray-100 text-gray-700';
+        },
+
+        statutLabel(statut) {
+            const map = {
+                nouveau: '🆕 Nouveau',
+                interessant: '⭐ Intéressant',
+                a_visiter: '📍 À visiter',
+                visite: '✅ Visité',
+                offre: '💰 Offre',
+                ecarte: '❌ Écarté',
+            };
+            return map[statut] || statut;
+        },
+    }
+}
+</script>
+</body>
+</html>
