@@ -135,8 +135,22 @@
                             <div class="min-w-0 flex-1">
                                 <!-- Badges -->
                                 <div class="flex flex-wrap items-center gap-1.5 mb-1.5">
-                                    <span class="text-xs px-2 py-0.5 rounded-full font-medium"
-                                          :class="statutBadge(a.statut)" x-text="statutLabel(a.statut)"></span>
+                                    <div class="relative" x-data="{ open: false }">
+                                        <button @click="open = !open" class="text-xs px-2 py-0.5 rounded-full font-medium cursor-pointer hover:ring-2 hover:ring-offset-1 hover:ring-gray-300 transition-all"
+                                                :class="statutBadge(a.statut)">
+                                            <span x-text="statutLabel(a.statut)"></span> ▾
+                                        </button>
+                                        <div x-show="open" @click.away="open = false" x-cloak
+                                             class="absolute left-0 top-full mt-1 bg-white rounded-lg shadow-lg border z-50 py-1 min-w-[160px]">
+                                            <template x-for="s in allStatuts" :key="s.value">
+                                                <button @click="updateStatut(a.id, s.value); open = false"
+                                                        class="w-full text-left text-xs px-3 py-2 hover:bg-gray-50 flex items-center gap-2"
+                                                        :class="a.statut === s.value ? 'font-bold bg-gray-50' : ''">
+                                                    <span x-text="s.label"></span>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
                                     <span class="text-xs text-gray-400" x-text="a.arrondissement + 'e'" x-show="a.arrondissement"></span>
                                     <span class="text-xs text-gray-400 truncate max-w-[150px]" x-text="a.quartier" x-show="a.quartier"></span>
                                 </div>
@@ -195,8 +209,6 @@
                         <!-- Actions — scrollable on mobile -->
                         <div class="flex gap-1.5 mt-3 pt-2.5 border-t overflow-x-auto -mx-1 px-1">
                             <a :href="a.url" target="_blank" class="text-xs bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-100 whitespace-nowrap btn-touch font-medium">🔗 Annonce</a>
-                            <button @click="updateStatut(a.id, 'interessant')" class="text-xs bg-green-50 text-green-700 px-3 py-1.5 rounded-lg hover:bg-green-100 whitespace-nowrap btn-touch">⭐</button>
-                            <button @click="updateStatut(a.id, 'a_visiter')" class="text-xs bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg hover:bg-purple-100 whitespace-nowrap btn-touch">📍</button>
                             <button @click="a._editComment = true; a._commentDraft = a.commentaire || ''" class="text-xs bg-gray-50 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-100 whitespace-nowrap btn-touch">💬</button>
                             <button @click="editContactPrompt(a)" class="text-xs bg-gray-50 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-100 whitespace-nowrap btn-touch">📇</button>
                             <button @click="ecarterPrompt(a.id)" class="text-xs bg-red-50 text-red-700 px-3 py-1.5 rounded-lg hover:bg-red-100 whitespace-nowrap btn-touch">❌</button>
@@ -241,6 +253,14 @@ function app() {
         addError: '',
         addSuccess: '',
         addForm: { url: '' },
+        allStatuts: [
+            { value: 'nouveau', label: '🆕 Nouveau' },
+            { value: 'interessant', label: '⭐ Intéressant' },
+            { value: 'a_visiter', label: '📍 À visiter' },
+            { value: 'visite', label: '✅ Visité' },
+            { value: 'offre', label: '💰 Offre' },
+            { value: 'ecarte', label: '❌ Écarté' },
+        ],
         filters: {
             statut: 'sans_ecarte',
             arrondissement: '',
